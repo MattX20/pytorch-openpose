@@ -1,6 +1,6 @@
-numpy
-matplotlib
 opencv-python
+numpy
 scipy
-scikit-image
-tqdm
+matplotlib
+torch
+torchvision
