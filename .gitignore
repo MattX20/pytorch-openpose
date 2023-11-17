@@ -1,2 +1,7 @@
 model/
 __pycache__/
+data/**
+**/*.mp4
+**/*.pkl
+**/*.png
+**/*.jpg
