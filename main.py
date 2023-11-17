@@ -11,36 +11,67 @@ import copy
 from src import model
 from src import util
 from src.body import Body
+from pathlib import Path
+from typing import List, Union, Optional
+
+BODY_ESTIMATION_MODEL = Path(__file__).parent / 'model'/'body_pose_model.pth'
+assert BODY_ESTIMATION_MODEL.exists(), "please download torch models at " \
+"https://drive.google.com/drive/folders/1JsvI4M4ZTg98fmnCZLFM-3TeovnCRElG"
 
 
-def main(image_paths, vis_dir, save_path=None):
-    '''
-    Run Openpose on a set of images.
-    -
-    image_paths: a list of image paths, e.g. ['path/to/image1', 'path/to/image2']
-    vis_dir: folder path for saving output images
-    save_path: the estimated human 2D poses will be saved to file if a valid save_path is provided
-    '''
 
-    num_images = len(image_paths)
+def get_model(body_estimation=BODY_ESTIMATION_MODEL):
+    if isinstance(body_estimation, str) or isinstance(body_estimation, Path):
+        body_estimation = Body(BODY_ESTIMATION_MODEL)
+    else:
+        assert isinstance(body_estimation, Body), f"Wrong model type {type(body_estimation)}"
+    return body_estimation
+
+def main(
+        image_list: List[Union[Path, str, np.ndarray]],
+        vis_dir: Path, save_path: Optional[Path]=None,
+        image_names: Optional[str]= None,
+        body_estimation: Union[Path, Body]=BODY_ESTIMATION_MODEL
+    ) -> np.ndarray:
+    """Run Openpose on a set of images.
+
+    Args:
+        image_list (List[Union[Path, str, np.ndarray]]):
+        a list of L image paths e.g. ['path/to/image1', 'path/to/image2'] 
+        or directly a list of numpy arrays.
+        vis_dir (Path): output folder path to save debug images
+        save_path (Path, optional): Path to save pose dictionaries. Defaults to None.
+        body_estimation (Union[Path, Body], optional): Path or loaded body model. Defaults to BODY_ESTIMATION_MODEL.
+
+    Returns:
+        np.ndarray: array [L, 18, 3]
+    """
+    # TODO : process several frames at once using the batch dimension
+
+    if isinstance(vis_dir, str):
+        vis_dir = Path(vis_dir)
+    num_images = len(image_list)
 
     # ------------------------------------------------------------
     # Initialize model
     # ------------------------------------------------------------
-
-    body_estimation = Body('model/body_pose_model.pth')
+    body_estimation = get_model(body_estimation)
 
     # Iterate over input images
     joints_2d = np.zeros((num_images, 18, 3))
     for img_id in range(num_images):
-        image_path = image_paths[img_id]
-        print("Processing {} ...".format(image_path))
-        oriImg = cv.imread(image_path) # B,G,R order
+        current_img = image_list[img_id]
+        if isinstance(current_img, str) or isinstance(current_img, Path):
+            image_path = current_img
+            print("Processing {} ...".format(image_path))
+            oriImg = cv.imread(image_path) # B,G,R order
+        else:
+            oriImg = current_img
+        
 
         # ------------------------------------------------------------
         # compute subsets
         # ------------------------------------------------------------
-
         candidate, subset, all_peaks = body_estimation(oriImg)
 
         # ------------------------------------------------------------
@@ -91,13 +122,15 @@ def main(image_paths, vis_dir, save_path=None):
         # ------------------------------------------------------------
         # Save the image to file
         # ------------------------------------------------------------
-        if not exists(vis_dir):
-            makedirs(vis_dir)
-
-        vis_path = join(vis_dir, basename(image_path))
-        
+        assert vis_dir.exists()
+        if image_names is not None:
+            im_name = image_names[img_id]
+            vis_path = vis_dir/f"{im_name}_pose.png"
+        else:
+            vis_path = vis_dir/f"{img_id:04d}_pose.png"
         plt.figure()
-        plt.imshow(canvas[:, :, [2, 1, 0]])
+        # plt.imshow(canvas[:, :, [2, 1, 0]])
+        plt.imshow(canvas)
         plt.axis('off')
         plt.savefig(vis_path)
         plt.close()
@@ -108,9 +141,14 @@ def main(image_paths, vis_dir, save_path=None):
     if save_path is not None:
         data_dict = {
             "joint_2d_positions": joints_2d,
-            "image_names": [basename(image_paths[i]) for i in range(num_images)]
+            # "image_names": [basename(image_paths[i]) for i in range(num_images)]
         }
-        with open(save_path, 'wb') as f:
+        if image_names is not None:
+            save_path_current = save_path/f"{image_names[img_id]}.pkl"
+        else:
+            save_path_current = save_path
+            
+        with open(save_path_current, 'wb') as f:
             pk.dump(data_dict, f)
 
     return joints_2d
