@@ -27,6 +27,7 @@ def encode_debug_figures(input_dir: Path, output_path: Optional[Path] = None, fp
         clip.write_videofile(str(output_path), fps=fps)
     return output_path
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Run Openpose on a video")
