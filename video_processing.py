@@ -68,6 +68,7 @@ def main():
     add_shared_parser_options(parser)
     video_args = parser.add_argument_group("video")
     video_args.add_argument("-t", "--trim", nargs="+", type=float, help="Trim in seconds like -t 4.8 5.3 or -t 0.5")
+    video_args.add_argument("-v", "--visualize", action="store_true")
     args = parser.parse_args()
     video_path = Path(args.input)
     assert video_path.exists()
@@ -83,7 +84,8 @@ def main():
             assert len(trim)==2, "trim shall have one or two elements"
         print(f"Video trimming: {trim}")
     load_video_frames(video_path, visualization_dir=out_dir, trim=trim, rotation=None)
-    
+    if args.visualize:
+        encode_debug_figures(out_dir, out_dir/(video_path.with_suffix(".gif").name))
 
 
 

@@ -14,5 +14,5 @@ Process a single video at once.
 - `--trim` allows selecting a segment in the video
 - `-v` to visualize a gif.
 ```bash
-python3 video_processing.py -i data/0001_pink_ball_vertical_throw.mp4 --trim 5. 6.2 -v
+python3 video_processing.py -i data/0001_pink_ball_vertical_throw.mp4 --trim 5.8 6.2 -v
 ```
