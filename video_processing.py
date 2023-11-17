@@ -25,8 +25,8 @@ def load_video_frames(
     model = None
     poses = []
     with VideoFileClip(str(video_path)) as video:
-        # https://github.com/Zulko/moviepy/issues/586
-        if video.rotation in (90, 270):
+        if video.rotation in (90, 270): # Support vertical videos
+            # https://github.com/Zulko/moviepy/issues/586
             video = video.resize(video.size[::-1])
             video.rotation = 0
         start, end = None, None
@@ -39,6 +39,7 @@ def load_video_frames(
                 end = int(end*video.fps)
         for frame_idx, frame in enumerate(video.iter_frames()):
             if end is not None and frame_idx>end:
+                logging.info(f"LAST FRAME REACHED! {frame_idx}>{end}")
                 break
             if start is not None and frame_idx<= start:
                 continue
@@ -59,12 +60,16 @@ def load_video_frames(
             poses.append(pose[0, ...])
     return poses
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Run Openpose on a video")
+
+def add_shared_parser_options(parser):
     path_args = parser.add_argument_group("paths")
     path_args.add_argument("-i", "--input", default="data/0001_pink_ball_vertical_throw.mp4", type=str)
     path_args.add_argument("-o", "--output-dir", required=False, type=str)
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Run Openpose on a video")
+    add_shared_parser_options(parser)
     video_args = parser.add_argument_group("video")
     video_args.add_argument("-t", "--trim", nargs="+", type=float, help="Trim in seconds like -t 4.8 5.3 or -t 0.5")
     args = parser.parse_args()
