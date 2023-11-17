@@ -1,16 +1,13 @@
 from pathlib import Path
 import argparse
 
-from moviepy.editor import VideoFileClip
-import numpy as np
-from video_processing import add_shared_parser_options
 from typing import Optional
 from moviepy.editor import ImageSequenceClip
-import moviepy.editor as mp
 import logging
-VIDEO_EXT = ["mp4", "avi", "mp4", "mov"]
+from shared import add_shared_parser_options, VIDEO_EXT
 
-def encode_debug_figures(input_dir: Path, output_path: Optional[Path] = None, fps=10):
+
+def encode_debug_figures(input_dir: Path, output_path: Optional[Path] = None, fps=10) -> Path:
     still_frames = sorted(list(input_dir.glob("*.png")))
     logging.info(f"Encoding {len(still_frames)} frames")
     # Define default output path if not provided
@@ -28,7 +25,7 @@ def encode_debug_figures(input_dir: Path, output_path: Optional[Path] = None, fp
     else:
         # Write the clip to a video file MP4/MOV/AVI
         clip.write_videofile(str(output_path), fps=fps)
-
+    return output_path
 
 def main():
     parser = argparse.ArgumentParser(

@@ -7,6 +7,8 @@ from main import main as main_processing, get_model
 from cv2 import resize, rotate, ROTATE_90_CLOCKWISE, ROTATE_90_COUNTERCLOCKWISE, ROTATE_180
 from typing import List, Union, Optional, Tuple
 import logging
+from shared import add_shared_parser_options
+from visualize_results import encode_debug_figures
 
 def load_video_frames(
         video_path: Path,
@@ -59,12 +61,6 @@ def load_video_frames(
             )
             poses.append(pose[0, ...])
     return poses
-
-
-def add_shared_parser_options(parser):
-    path_args = parser.add_argument_group("paths")
-    path_args.add_argument("-i", "--input", default="data/0001_pink_ball_vertical_throw.mp4", type=str)
-    path_args.add_argument("-o", "--output-dir", required=False, type=str)
 
 def main():
     parser = argparse.ArgumentParser(

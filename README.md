@@ -10,7 +10,9 @@ Model weights can be found on this [google drive](https://drive.google.com/drive
 ## Video processor
 
 Process a single video at once.
-
+- `-i` path to input video (.mp4)
+- `--trim` allows selecting a segment in the video
+- `-v` to visualize a gif.
 ```bash
-python3 video_processing.py -i data/0001_pink_ball_vertical_throw.mp4 --trim 5. 6.2
+python3 video_processing.py -i data/0001_pink_ball_vertical_throw.mp4 --trim 5. 6.2 -v
 ```
