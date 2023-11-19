@@ -4,3 +4,5 @@ scipy
 matplotlib
 torch
 torchvision
+moviepy
+batch-processing

@@ -10,12 +10,15 @@ from torchvision import transforms
 
 from src import util
 from src.model import bodypose_model
+import logging
 
 class Body(object):
     def __init__(self, model_path):
         self.model = bodypose_model()
         if torch.cuda.is_available():
             self.model = self.model.cuda()
+        else:
+            logging.warning('No GPU, fallback to CPU')
         model_dict = util.transfer(self.model, torch.load(model_path))
         self.model.load_state_dict(model_dict)
         self.model.eval()
